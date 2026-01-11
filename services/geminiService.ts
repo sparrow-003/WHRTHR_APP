@@ -3,8 +3,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { WeatherData, GeminiInsight } from "../types";
 
 export const getNatureInsight = async (weather: WeatherData): Promise<GeminiInsight> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  // Support both standard Vite env vars and the defining polyfill in vite.config
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || (process.env.API_KEY as string);
+
+  if (!apiKey) {
+    console.warn("No API key found, using fallback nature lore.");
+    return getFallbackInsight();
+  }
+  const ai = new GoogleGenAI({ apiKey });
+
   const prompt = `
     Analyze the current weather in ${weather.city}:
     Temperature: ${weather.temp}°C
@@ -19,8 +26,11 @@ export const getNatureInsight = async (weather: WeatherData): Promise<GeminiInsi
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
+      model: "gemini-2.0-flash", // Updated to a stable model name if possible, or keep preview
+      contents: {
+        role: "user",
+        parts: [{ text: prompt }]
+      },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -37,8 +47,20 @@ export const getNatureInsight = async (weather: WeatherData): Promise<GeminiInsi
       }
     });
 
-    // Access .text property directly, do not call as a method
-    let textOutput = response.text;
+    // Robust extraction of text
+    let textOutput = "";
+    if (response) {
+      // @ts-ignore - Handle potential SDK variations safely
+      if (typeof response.text === 'function') {
+        // @ts-ignore
+        textOutput = response.text();
+      } else if (typeof response.text === 'string') {
+        textOutput = response.text;
+      } else if (response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
+        textOutput = response.candidates[0].content.parts[0].text;
+      }
+    }
+
     if (!textOutput) throw new Error("Empty AI response");
 
     // Clean potential markdown formatting
@@ -49,14 +71,16 @@ export const getNatureInsight = async (weather: WeatherData): Promise<GeminiInsi
 
     return JSON.parse(cleanText);
   } catch (error) {
-    console.warn("AI Insight generation failed, using fallback nature lore.", error);
-    return {
-      natureDescription: "The atmosphere is currently whispering ancient patterns, inviting a moment of silent observation as the day unfolds.",
-      tips: [
-        "Find a moment to stand still and feel the air's temperature on your skin.",
-        "Observe the local flora; notice how the leaves react to the current humidity.",
-        "Take three deep breaths, synchronizing your rhythm with the ambient wind speed."
-      ]
-    };
+    console.warn("AI Insight generation failed, using fallback.", error);
+    return getFallbackInsight();
   }
 };
+
+const getFallbackInsight = (): GeminiInsight => ({
+  natureDescription: "The atmosphere is currently whispering ancient patterns, inviting a moment of silent observation as the day unfolds.",
+  tips: [
+    "Find a moment to stand still and feel the air's temperature on your skin.",
+    "Observe the local flora; notice how the leaves react to the current humidity.",
+    "Take three deep breaths, synchronizing your rhythm with the ambient wind speed."
+  ]
+});

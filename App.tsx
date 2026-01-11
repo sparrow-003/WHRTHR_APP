@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [city, setCity] = useState('New York');
 
-  const fetchFullWeather = useCallback(async (searchCity?: string, coords?: {lat: number, lon: number}) => {
+  const fetchFullWeather = useCallback(async (searchCity?: string, coords?: { lat: number, lon: number }) => {
     setLoading(true);
     setError(null);
     try {
@@ -24,13 +24,13 @@ const App: React.FC = () => {
       } else {
         data = await getWeatherData(searchCity || city);
       }
-      
+
       setWeather(data);
       setCity(data.city);
-      
+
       // Attempt to load AI insights in the background
       getNatureInsight(data).then(setInsight).catch(() => setInsight(null));
-      
+
     } catch (err: any) {
       console.error("Fetch Error:", err);
       setError(err.message || 'The connection to Earth data was interrupted.');
@@ -60,6 +60,32 @@ const App: React.FC = () => {
     fetchFullWeather(newCity);
   };
 
+  // Initial State / Fallback (Prevent Blank Screen)
+  if (!loading && !weather && !error) {
+    // If for some reason we aren't loading, have no weather, and no error, 
+    // show a manual entry screen.
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#020617] text-white p-6">
+        <div className="max-w-lg w-full text-center space-y-8">
+          <h1 className="text-6xl font-serif italic text-emerald-400">Gaia</h1>
+          <p className="text-white/40 tracking-[0.3em] uppercase text-sm">Initiate Connection</p>
+
+          <div className="relative group max-w-sm mx-auto w-full">
+            <input
+              type="text"
+              placeholder="Enter habitat name..."
+              className="w-full bg-white/5 border border-white/10 py-4 px-6 rounded-xl outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all text-white text-center placeholder:text-white/20"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
+              }}
+            />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Loading Screen
   if (loading && !weather) {
     return (
@@ -87,24 +113,24 @@ const App: React.FC = () => {
           </div>
           <h2 className="text-4xl font-serif italic mb-6 text-red-100">Frequency Interrupted</h2>
           <p className="text-white/40 mb-10 leading-relaxed text-lg">{error}</p>
-          
+
           <div className="grid gap-4">
-            <button 
+            <button
               onClick={() => fetchFullWeather(city)}
               className="w-full bg-emerald-500 text-emerald-950 font-bold py-5 rounded-2xl hover:bg-emerald-400 transition-all flex items-center justify-center gap-3 shadow-xl"
             >
               <RefreshCw size={20} /> Re-Establish Connection
             </button>
             <div className="relative group">
-               <input 
-                type="text" 
-                placeholder="Search a different habitat..." 
+              <input
+                type="text"
+                placeholder="Search a different habitat..."
                 className="w-full bg-white/5 border border-white/10 py-5 px-8 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all text-white placeholder:text-white/20"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
                 }}
-               />
-               <Search className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20" size={20} />
+              />
+              <Search className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20" size={20} />
             </div>
           </div>
         </div>
@@ -117,15 +143,15 @@ const App: React.FC = () => {
       {weather && (
         <>
           <ThreeDBackground weatherCode={weather.conditionCode} windSpeed={weather.windSpeed} />
-          <WeatherUI 
-            weather={weather} 
-            insight={insight} 
-            onSearch={handleSearch} 
+          <WeatherUI
+            weather={weather}
+            insight={insight}
+            onSearch={handleSearch}
             loading={loading}
           />
         </>
       )}
-      
+
       {/* Toast Error Notification (for failed searches while data exists) */}
       {error && weather && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] bg-red-500/10 backdrop-blur-3xl border border-red-500/20 text-red-200 px-8 py-5 rounded-3xl flex items-center gap-4 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
