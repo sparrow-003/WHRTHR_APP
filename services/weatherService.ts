@@ -22,6 +22,18 @@ export const getWeatherData = async (city: string): Promise<WeatherData> => {
   }
 };
 
+export const fetchCitySuggestions = async (query: string): Promise<{ name: string; admin1?: string; country?: string }[]> => {
+  if (!query || query.length < 2) return [];
+  try {
+    const response = await fetch(`${GEO_API}?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
+    const data = await response.json();
+    return data.results || [];
+  } catch (error) {
+    console.warn("Failed to fetch suggestions", error);
+    return [];
+  }
+};
+
 export const fetchWeatherByCoords = async (lat: number, lon: number, name: string = "Current Location"): Promise<WeatherData> => {
   try {
     const weatherRes = await fetch(

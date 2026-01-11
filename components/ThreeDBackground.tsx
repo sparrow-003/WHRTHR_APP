@@ -9,6 +9,8 @@ interface Props {
   windSpeed?: number;
 }
 
+// ... (imports remain the same)
+
 const WeatherEffects = ({ weatherCode, windSpeed = 10 }: Props) => {
   const particlesRef = useRef<THREE.Points>(null);
 
@@ -36,15 +38,15 @@ const WeatherEffects = ({ weatherCode, windSpeed = 10 }: Props) => {
     return new THREE.CanvasTexture(canvas);
   }, []);
 
-  const windDrift = (windSpeed / 50) * 0.3;
-  const particleCount = isRainy ? 5000 : isSnowy ? 3000 : isClear ? 200 : 1000;
+  const windDrift = (windSpeed / 50) * 0.5; // Increased drift for realism
+  const particleCount = isRainy ? 8000 : isSnowy ? 4000 : isClear ? 300 : 1500; // Increased counts
 
   const positions = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 60;
-      pos[i * 3 + 1] = Math.random() * 30;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 60;
+      pos[i * 3] = (Math.random() - 0.5) * 80; // Wider area
+      pos[i * 3 + 1] = Math.random() * 40;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 80;
     }
     return pos;
   }, [particleCount]);
@@ -58,24 +60,27 @@ const WeatherEffects = ({ weatherCode, windSpeed = 10 }: Props) => {
       const idx = i * 3;
 
       if (isRainy) {
-        array[idx + 1] -= 0.6 + (windSpeed / 80);
+        array[idx + 1] -= 0.8 + (windSpeed / 60) + Math.random() * 0.1; // Faster, varied rain
+        array[idx] += windDrift;
       } else if (isSnowy) {
-        array[idx + 1] -= 0.04 + (Math.sin(time + i) * 0.01);
-        array[idx] += Math.sin(time * 0.5 + i) * 0.03;
-        array[idx + 2] += Math.cos(time * 0.3 + i) * 0.02;
+        array[idx + 1] -= 0.05 + (Math.sin(time + i) * 0.02);
+        array[idx] += Math.sin(time * 0.5 + i) * 0.05 + windDrift; // More swirl
+        array[idx + 2] += Math.cos(time * 0.3 + i) * 0.03;
       } else {
-        array[idx + 1] -= 0.01;
+        // Floating particles (dust/pollen)
+        array[idx + 1] -= 0.02;
+        array[idx] += Math.sin(time * 0.1 + i) * 0.01;
       }
 
-      array[idx] += windDrift;
-
-      if (array[idx + 1] < -2) {
-        array[idx + 1] = 28;
-        array[idx] = (Math.random() - 0.5) * 60;
+      // Reset positions
+      if (array[idx + 1] < -10) {
+        array[idx + 1] = 30;
+        array[idx] = (Math.random() - 0.5) * 80;
+        array[idx + 2] = (Math.random() - 0.5) * 80;
       }
 
-      if (array[idx] > 30) array[idx] = -30;
-      if (array[idx] < -30) array[idx] = 30;
+      if (array[idx] > 40) array[idx] = -40;
+      if (array[idx] < -40) array[idx] = 40;
     }
     particlesRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -92,23 +97,24 @@ const WeatherEffects = ({ weatherCode, windSpeed = 10 }: Props) => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={isSnowy ? 0.25 : isRainy ? 0.06 : 0.04}
-          color={isRainy ? "#94a3b8" : isSnowy ? "#ffffff" : "#fbbf24"}
+          size={isSnowy ? 0.3 : isRainy ? 0.08 : 0.06}
+          // Yellow/Blue theme colors
+          color={isRainy ? "#60a5fa" : isSnowy ? "#ffffff" : "#fcd34d"}
           transparent
-          opacity={isSnowy ? 0.8 : 0.6}
+          opacity={isSnowy ? 0.9 : isRainy ? 0.7 : 0.8}
           map={isSnowy ? snowflakeTexture : null}
           alphaTest={0.01}
           depthWrite={false}
-          blending={isSnowy ? THREE.AdditiveBlending : THREE.NormalBlending}
+          blending={THREE.AdditiveBlending}
         />
       </points>
 
       {isRainy || isStormy ? (
-        <fog attach="fog" args={['#1e293b', 1, 35]} />
+        <fog attach="fog" args={['#1e3a8a', 2, 45]} /> // Dark Blue Fog
       ) : isSnowy ? (
-        <fog attach="fog" args={['#334155', 1, 40]} />
+        <fog attach="fog" args={['#cbd5e1', 2, 50]} /> // White/Grey Fog
       ) : (
-        <fog attach="fog" args={['#0c4a6e', 1, 60]} />
+        <fog attach="fog" args={['#3b82f6', 5, 80]} /> // Bright Blue Fog
       )}
     </>
   );
@@ -119,16 +125,15 @@ const Landscape = ({ scrollOffset }: { scrollOffset: React.MutableRefObject<numb
 
   useFrame(() => {
     if (landscapeRef.current) {
-      // Subtle rotation and downward movement for parallax
-      landscapeRef.current.position.y = -1 - (scrollOffset.current * 0.002);
+      landscapeRef.current.position.y = -2 - (scrollOffset.current * 0.002);
       landscapeRef.current.rotation.x = -Math.PI / 2 - (scrollOffset.current * 0.0001);
     }
   });
 
   return (
-    <mesh ref={landscapeRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
+    <mesh ref={landscapeRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]}>
       <planeGeometry args={[300, 300]} />
-      <meshStandardMaterial color="#064e3b" roughness={0.9} />
+      <meshStandardMaterial color="#1e40af" roughness={0.8} metalness={0.2} />
     </mesh>
   );
 };
@@ -155,125 +160,61 @@ const DynamicAtmosphere = ({ weatherCode, windSpeed = 10 }: Props) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const getBaseOpacity = () => {
-    if (isStormy) return 0.85;
-    if (isRainy) return 0.75;
-    if (isCloudy) return 0.6;
-    if (weatherCode >= 1 && weatherCode <= 3) return 0.25;
-    return 0.1;
-  };
-
   const getCloudColor = () => {
-    if (isStormy) return "#2d3748";
-    if (isRainy) return "#94a3b8";
-    if (isSunrise) return "#fed7aa";
-    if (isSunset) return "#fecaca";
-    if (isNight) return "#1e293b";
-    return "#ffffff";
+    if (isStormy) return "#1e3a8a"; // Dark Blue
+    if (isRainy) return "#93c5fd"; // Light Blue
+    if (isSunrise) return "#fde047"; // Yellow
+    if (isSunset) return "#bfdbfe"; // Soft Blue
+    if (isNight) return "#172554"; // Very Dark Blue
+    return "#ffffff"; // White
   };
 
-  const baseOpacity = getBaseOpacity();
   const cloudColor = getCloudColor();
-  const windIntensity = Math.min(windSpeed / 40, 3.5);
-  const timeFactor = isNight ? 0.6 : 1.0;
-  const floatSpeed = (isCloudy ? 1.0 + windIntensity : 0.8) * timeFactor;
-  const cloudSpeed = (0.15 + (windIntensity * 0.5)) * timeFactor;
 
+  // Adjusted animation logic
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     const scrollVal = scrollOffset.current;
 
-    // Camera Parallax
     state.camera.position.y = 3 - (scrollVal * 0.005);
-    state.camera.rotation.x = - (scrollVal * 0.0002);
 
     if (cloudGroupRef.current) {
-      cloudGroupRef.current.position.x = Math.sin(time * 0.12 * (1 + windIntensity)) * 10;
-      cloudGroupRef.current.position.y = 12 - (scrollVal * 0.012);
-
-      const shapePulse = Math.sin(time * 0.2 + (windIntensity * 0.5)) * 0.05;
-      cloudGroupRef.current.scale.set(1 + shapePulse, 1 - shapePulse, 1 + shapePulse * 0.5);
-      cloudGroupRef.current.rotation.y = Math.sin(time * 0.05) * 0.1;
-
-      if (windSpeed > 25) {
-        cloudGroupRef.current.position.y += Math.sin(time * 2.5) * (windIntensity * 0.25);
-        cloudGroupRef.current.rotation.z = Math.sin(time * 1.5) * 0.08 * windIntensity;
-      }
+      cloudGroupRef.current.position.x = Math.sin(time * 0.05) * 5;
+      cloudGroupRef.current.rotation.y = time * 0.02;
     }
 
     if (sunLightRef.current) {
-      const sunBaseIntensity = isNight ? 0.1 : 1.4;
-      const cloudDimming = isCloudy || isRainy ? 0.35 : (weatherCode > 0 ? 0.8 : 1.0);
-      const stormFlicker = isStormy ? (Math.random() > 0.985 ? 3.5 : 1) : 1;
-
-      sunLightRef.current.intensity = (sunBaseIntensity + Math.sin(time * 0.3) * 0.1) * cloudDimming * stormFlicker;
-
-      const sunX = 120 * Math.cos(time * 0.008);
-      const sunZ = 120 * Math.sin(time * 0.008);
-      sunLightRef.current.position.set(sunX, 45, sunZ);
+      sunLightRef.current.position.set(50, 50, 50);
+      sunLightRef.current.intensity = isNight ? 0.2 : 1.5;
     }
   });
 
   return (
     <>
-      <ambientLight intensity={isNight ? 0.1 : 0.5} />
-      <directionalLight ref={sunLightRef} position={[100, 40, 100]} castShadow />
+      <ambientLight intensity={isNight ? 0.2 : 0.6} />
+      <directionalLight ref={sunLightRef} position={[50, 50, 50]} castShadow />
 
       {isNight ? (
-        <Stars radius={120} depth={60} count={7500} factor={6} saturation={0} fade speed={1.8} />
+        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
       ) : (
         <Sky
-          sunPosition={[100, 20, 100]}
-          turbidity={isCloudy ? 15 : 0.05}
-          rayleigh={isCloudy ? 6 : 0.4}
-          mieCoefficient={isCloudy ? 0.15 : 0.005}
-          mieDirectionalG={0.9}
+          sunPosition={[100, 40, 100]}
+          turbidity={10}
+          rayleigh={2}
+          mieCoefficient={0.005}
+          mieDirectionalG={0.8}
         />
       )}
 
-      <group ref={cloudGroupRef} position={[0, 12, -15]}>
-        <Float speed={floatSpeed} rotationIntensity={0.8} floatIntensity={1.5}>
-          <Cloud
-            opacity={baseOpacity}
-            speed={cloudSpeed}
-            width={16}
-            depth={3}
-            segments={28}
-            position={[-12, 0, 0]}
-            color={cloudColor}
-          />
-          <Cloud
-            opacity={baseOpacity * 0.95}
-            speed={cloudSpeed * 0.85}
-            width={24}
-            depth={5}
-            segments={35}
-            position={[15, -4, -12]}
-            color={cloudColor}
-          />
-          <Cloud
-            opacity={baseOpacity * 0.8}
-            speed={cloudSpeed * 1.2}
-            width={18}
-            depth={4}
-            segments={22}
-            position={[-4, 5, -25]}
-            color={cloudColor}
-          />
-        </Float>
+      <group ref={cloudGroupRef} position={[0, 10, -20]}>
+        <Cloud opacity={0.6} speed={0.4} width={20} depth={5} segments={20} color={cloudColor} />
       </group>
 
       <WeatherEffects weatherCode={weatherCode} windSpeed={windSpeed} />
       <Landscape scrollOffset={scrollOffset} />
 
-      {(!isCloudy && !isNight) && (
-        <Sparkles
-          count={120}
-          scale={45}
-          size={5}
-          speed={0.4 + (windIntensity * 0.3)}
-          color={isSunset || isSunrise ? "#fb923c" : "#fef08a"}
-        />
+      {!isNight && !isRainy && (
+        <Sparkles count={100} scale={40} size={6} speed={0.4} opacity={0.5} color="#facc15" />
       )}
     </>
   );
