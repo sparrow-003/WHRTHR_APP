@@ -22,16 +22,16 @@ export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
   const label = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
 
   return (
-    <div className={`min-w-[120px] flex flex-col items-center p-4 rounded-2xl border transition-all hover:scale-105 ${isPast ? 'bg-white/5 border-white/5 opacity-80' : 'bg-white/10 border-white/10 shadow-lg'}`}>
-      <span className="text-[10px] uppercase tracking-widest text-white/40 mb-3 font-semibold">
+    <div className={`min-w-[120px] flex flex-col items-center p-4 border transition-all hover:scale-105 ${isPast ? 'bg-white/40 dark:bg-white/5 border-white/20 dark:border-white/5 opacity-80' : 'bg-white/60 dark:bg-white/10 border-white/30 dark:border-white/10 shadow-lg'}`}>
+      <span className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-white/40 mb-3 font-semibold">
         {label}
       </span>
-      <div className="h-12 w-12 bg-white/5 rounded-full flex items-center justify-center mb-3 group-hover:bg-white/10 transition-colors">
+      <div className="h-12 w-12 bg-white/50 dark:bg-white/5 flex items-center justify-center mb-3 group-hover:bg-white/60 dark:group-hover:bg-white/10 transition-colors">
         <WeatherIcon code={day.conditionCode} />
       </div>
       <div className="flex flex-col items-center">
-        <span className="text-lg font-bold text-white">{day.maxTemp}°</span>
-        <span className="text-xs text-white/30">{day.minTemp}°</span>
+        <span className="text-lg font-bold text-slate-800 dark:text-white">{day.maxTemp}°</span>
+        <span className="text-xs text-slate-500 dark:text-white/30">{day.minTemp}°</span>
       </div>
     </div>
   );

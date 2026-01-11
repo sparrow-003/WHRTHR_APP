@@ -32,23 +32,61 @@ export const fetchWeatherByCoords = async (lat: number, lon: number, name: strin
 
     const data = await weatherRes.json();
 
-    const allDaily: DayData[] = data.daily.time.map((time: string, i: number) => ({
-      date: time,
-      maxTemp: Math.round(data.daily.temperature_2m_max[i]),
-      minTemp: Math.round(data.daily.temperature_2m_min[i]),
-      conditionCode: data.daily.weather_code[i]
-    }));
+    // Validate response shape
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid weather payload: missing root object');
+    }
+    if (!data.daily || typeof data.daily !== 'object') {
+      throw new Error('Invalid weather payload: missing "daily" object');
+    }
+    if (!data.current || typeof data.current !== 'object') {
+      throw new Error('Invalid weather payload: missing "current" object');
+    }
+
+    const daily = data.daily;
+    const timeArr: string[] = Array.isArray(daily.time) ? daily.time : [];
+    const tMaxArr: number[] = Array.isArray(daily.temperature_2m_max) ? daily.temperature_2m_max : [];
+    const tMinArr: number[] = Array.isArray(daily.temperature_2m_min) ? daily.temperature_2m_min : [];
+    const wCodeArr: number[] = Array.isArray(daily.weather_code) ? daily.weather_code : [];
+    const uvArr: number[] = Array.isArray(daily.uv_index_max) ? daily.uv_index_max : [];
+
+    // Determine safe iteration length to avoid out-of-range access
+    const minDailyLen = Math.min(timeArr.length, tMaxArr.length, tMinArr.length, wCodeArr.length);
+
+    const allDaily: DayData[] = [];
+    for (let i = 0; i < minDailyLen; i++) {
+      allDaily.push({
+        date: timeArr[i],
+        maxTemp: Number.isFinite(tMaxArr[i]) ? Math.round(tMaxArr[i]) : 0,
+        minTemp: Number.isFinite(tMinArr[i]) ? Math.round(tMinArr[i]) : 0,
+        conditionCode: typeof wCodeArr[i] === 'number' ? wCodeArr[i] : -1
+      });
+    }
+
+    // Safe lookups for current values
+    const current = data.current;
+    const temp = Number.isFinite(current.temperature_2m) ? Math.round(current.temperature_2m) : 0;
+    const currentCode = typeof current.weather_code === 'number' ? current.weather_code : -1;
+    const humidity = Number.isFinite(current.relative_humidity_2m) ? current.relative_humidity_2m : 0;
+    const windSpeed = Number.isFinite(current.wind_speed_10m) ? current.wind_speed_10m : 0;
+
+    // uv index: when past_days=7 the current day is often at index 7; guard against out-of-range
+    const uvIndex = (uvArr.length > 7 && Number.isFinite(uvArr[7])) ? uvArr[7] : (uvArr.length > 0 && Number.isFinite(uvArr[uvArr.length - 1]) ? uvArr[uvArr.length - 1] : 0);
+
+    const pastSliceEnd = Math.min(7, allDaily.length);
+    const futureStart = Math.min(8, allDaily.length);
+    const futureEnd = Math.min(15, allDaily.length);
 
     return {
       city: name,
-      temp: Math.round(data.current.temperature_2m),
-      condition: getWeatherCondition(data.current.weather_code),
-      conditionCode: data.current.weather_code,
-      humidity: data.current.relative_humidity_2m,
-      windSpeed: data.current.wind_speed_10m,
-      uvIndex: data.daily.uv_index_max[7] || 0, // Current day usually index 7 if past_days=7 (0-6 are past, 7 is today)
-      past: allDaily.slice(0, 7),
-      future: allDaily.slice(8, 15)
+      temp,
+      condition: getWeatherCondition(currentCode),
+      conditionCode: currentCode,
+      humidity,
+      windSpeed,
+      uvIndex,
+      past: allDaily.slice(0, pastSliceEnd),
+      future: allDaily.slice(futureStart, futureEnd)
     };
   } catch (error) {
     console.error("Forecast Retrieval Error:", error);
