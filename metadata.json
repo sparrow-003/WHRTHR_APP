@@ -1,6 +1,6 @@
 {
-  "name": "GaiaWeather: Nature-Synced Forecasts",
-  "description": "A high-fidelity 3D weather experience that connects you with nature's rhythm using real-time data and Gemini-powered atmospheric insights.",
+  "name": "Weather Pro: Atmospheric Intelligence",
+  "description": "A professional-grade weather platform featuring glassmorphic design, 3D atmospheric simulations, and AI-driven nature insights.",
   "requestFramePermissions": [
     "geolocation"
   ]

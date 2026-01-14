@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { DayData } from '../types';
-import { Cloud, Sun, CloudRain, CloudSnow, Zap, Thermometer } from 'lucide-react';
+import { Cloud, Sun, CloudRain, CloudSnow, Zap } from 'lucide-react';
 
 interface Props {
   day: DayData;
@@ -9,29 +8,33 @@ interface Props {
 }
 
 const WeatherIcon = ({ code }: { code: number }) => {
-  if (code === 0) return <Sun size={18} className="text-yellow-400" />;
-  if (code <= 3) return <Cloud size={18} className="text-blue-200" />;
-  if (code <= 67) return <CloudRain size={18} className="text-indigo-400" />;
-  if (code <= 77) return <CloudSnow size={18} className="text-white" />;
-  if (code <= 99) return <Zap size={18} className="text-purple-400" />;
-  return <Cloud size={18} />;
+  if (code === 0) return <Sun size={22} className="text-yellow-400" />;
+  if (code <= 3) return <Cloud size={22} className="text-zinc-400" />;
+  if (code <= 67) return <CloudRain size={22} className="text-blue-400" />;
+  if (code <= 77) return <CloudSnow size={22} className="text-white" />;
+  if (code <= 99) return <Zap size={22} className="text-yellow-500" />;
+  return <Cloud size={22} className="text-zinc-400" />;
 };
 
 export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
   const dateObj = new Date(day.date);
-  const label = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+  const label = isPast 
+    ? dateObj.toLocaleDateString('en-US', { weekday: 'short' })
+    : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+  
+  const isToday = new Date().toDateString() === dateObj.toDateString();
 
   return (
-    <div className={`min-w-[120px] flex flex-col items-center p-4 border transition-all hover:scale-105 ${isPast ? 'bg-white/40 dark:bg-white/5 border-white/20 dark:border-white/5 opacity-80' : 'bg-white/60 dark:bg-white/10 border-white/30 dark:border-white/10 shadow-lg'}`}>
-      <span className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-white/40 mb-3 font-semibold">
-        {label}
+    <div className={`flex flex-col items-center gap-4 min-w-[60px] py-2 transition-all hover:scale-110 ${isPast ? 'opacity-40' : ''}`}>
+      <span className="text-sm font-bold tracking-tight">
+        {isToday ? 'Today' : label}
       </span>
-      <div className="h-12 w-12 bg-white/50 dark:bg-white/5 flex items-center justify-center mb-3 group-hover:bg-white/60 dark:group-hover:bg-white/10 transition-colors">
+      <div className="h-10 flex items-center justify-center">
         <WeatherIcon code={day.conditionCode} />
       </div>
       <div className="flex flex-col items-center">
-        <span className="text-lg font-bold text-slate-800 dark:text-white">{day.maxTemp}°</span>
-        <span className="text-xs text-slate-500 dark:text-white/30">{day.minTemp}°</span>
+        <span className="text-lg font-semibold">{day.maxTemp}°</span>
+        <span className="text-sm font-medium text-white/30">{day.minTemp}°</span>
       </div>
     </div>
   );

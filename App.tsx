@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { WeatherData, GeminiInsight } from './types';
 import { getWeatherData, fetchWeatherByCoords } from './services/weatherService';
 import { getNatureInsight } from './services/geminiService';
 import ThreeDBackground from './components/ThreeDBackground';
 import WeatherUI from './components/WeatherUI';
-import { Loader2, Trees, RefreshCw, Search, CloudOff } from 'lucide-react';
+import { Loader2, RefreshCw, Search, CloudOff } from 'lucide-react';
 
 const App: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -28,7 +27,6 @@ const App: React.FC = () => {
       setWeather(data);
       setCity(data.city);
 
-      // Attempt to load AI insights in the background
       getNatureInsight(data).then(setInsight).catch(() => setInsight(null));
 
     } catch (err: any) {
@@ -40,13 +38,11 @@ const App: React.FC = () => {
   }, [city]);
 
   useEffect(() => {
-    // Initial Sync
     const startApp = async () => {
       if ("geolocation" in navigator) {
-        // We set a small timeout for the prompt to feel natural
         navigator.geolocation.getCurrentPosition(
           (pos) => fetchFullWeather(undefined, { lat: pos.coords.latitude, lon: pos.coords.longitude }),
-          () => fetchFullWeather(city), // Fallback if denied
+          () => fetchFullWeather(city),
           { timeout: 5000 }
         );
       } else {
@@ -60,78 +56,69 @@ const App: React.FC = () => {
     fetchFullWeather(newCity);
   };
 
-  // Initial State / Fallback (Prevent Blank Screen)
   if (!loading && !weather && !error) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-blue-50 text-blue-950 dark:bg-[#020617] dark:text-blue-50 p-6 transition-colors duration-500">
-        <div className="max-w-lg w-full text-center space-y-8">
-          <h1 className="text-6xl font-bold tracking-tighter text-blue-900 dark:text-white">Alex's Weather</h1>
-          <p className="text-blue-400 dark:text-blue-200/50 tracking-[0.3em] uppercase text-sm font-bold">System Online</p>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white p-6">
+        <div className="max-w-md w-full space-y-8 animate-in fade-in duration-1000">
+          <div className="text-center space-y-2">
+            <h1 className="text-5xl font-extrabold tracking-tight">Weather</h1>
+            <p className="text-zinc-400 font-medium">Enter a city to get started</p>
+          </div>
 
-          <div className="relative group max-w-sm mx-auto w-full">
+          <div className="relative group">
             <input
               type="text"
-              placeholder="Enter habitat name..."
-              className="w-full bg-white border border-blue-200 dark:bg-white/5 dark:border-white/10 py-4 px-6 outline-none focus:ring-4 focus:ring-blue-400/20 rounded-xl transition-all text-blue-900 dark:text-white text-center placeholder:text-blue-300 dark:placeholder:text-white/20 shadow-xl"
+              placeholder="Search City"
+              className="w-full bg-zinc-900/50 backdrop-blur-xl border border-white/10 py-4 px-6 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center text-lg placeholder:text-zinc-600"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
               }}
             />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300 dark:text-white/20" size={18} />
+            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
           </div>
         </div>
       </div>
     );
   }
 
-  // Loading Screen
   if (loading && !weather) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-blue-50 dark:bg-[#020617] text-blue-900 dark:text-white transition-colors duration-500">
-        <div className="relative mb-12">
-          <div className="absolute inset-0 bg-blue-500/20 blur-[100px] animate-pulse rounded-full" />
-          <Loader2 className="animate-spin text-blue-500 relative z-10" size={84} strokeWidth={1.5} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-bounce" />
-          </div>
-        </div>
-        <div className="text-center space-y-4 relative z-10">
-          <h2 className="text-blue-900 dark:text-white font-bold text-4xl animate-pulse tracking-tight">Initializing</h2>
-          <p className="text-blue-400 dark:text-blue-200/40 text-[10px] uppercase tracking-[0.5em] font-bold">Syncing Atmospheric Data</p>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white">
+        <div className="relative flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-zinc-400 font-medium animate-pulse uppercase tracking-widest text-xs">Updating...</p>
         </div>
       </div>
     );
   }
 
-  // Error Screen
   if (error && !weather) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-red-50 dark:bg-[#0f0505] text-slate-900 dark:text-white p-6 transition-colors duration-500">
-        <div className="max-w-lg w-full bg-white dark:bg-white/5 border border-red-100 dark:border-red-500/10 p-12 backdrop-blur-3xl text-center shadow-2xl rounded-3xl">
-          <div className="w-24 h-24 bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-8 border border-red-100 dark:border-red-500/20 rounded-full">
-            <CloudOff className="text-red-400" size={40} />
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white p-6">
+        <div className="max-w-md w-full glass-dark p-10 rounded-3xl text-center space-y-6">
+          <div className="w-20 h-20 bg-red-500/10 flex items-center justify-center mx-auto rounded-full">
+            <CloudOff className="text-red-500" size={32} />
           </div>
-          <h2 className="text-3xl font-bold mb-4 text-red-900 dark:text-red-100">Connection Failed</h2>
-          <p className="text-red-400 dark:text-red-200/50 mb-10 leading-relaxed">{error}</p>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Location Unreachable</h2>
+            <p className="text-zinc-400 text-sm leading-relaxed">{error}</p>
+          </div>
 
-          <div className="grid gap-4">
+          <div className="space-y-3">
             <button
               onClick={() => fetchFullWeather(city)}
-              className="w-full bg-red-500 text-white font-bold py-4 hover:bg-red-600 transition-all flex items-center justify-center gap-3 shadow-lg rounded-xl"
+              className="w-full bg-white text-black font-bold py-4 rounded-2xl transition-all active:scale-95"
             >
-              <RefreshCw size={20} /> Retry Connection
+              Try Again
             </button>
-            <div className="relative group">
-              <input
-                type="text"
-                placeholder="Search a different habitat..."
-                className="w-full bg-slate-50 border border-slate-200 dark:bg-white/5 dark:border-white/10 py-4 px-8 outline-none focus:ring-2 focus:ring-red-500/30 rounded-xl transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
-                }}
-              />
-              <Search className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/20" size={20} />
-            </div>
+            <input
+              type="text"
+              placeholder="Search another city"
+              className="w-full bg-white/5 border border-white/10 py-4 px-6 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 text-center text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
+              }}
+            />
           </div>
         </div>
       </div>
@@ -139,9 +126,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen selection:bg-emerald-500/30 bg-gray-50 dark:bg-[#020617] overflow-x-hidden transition-colors duration-500">
+    <div className="relative min-h-screen bg-black text-white selection:bg-blue-500/30 overflow-x-hidden transition-colors duration-500">
       {weather && (
-        <>
+        <div className="animate-in fade-in duration-1000">
           <ThreeDBackground weatherCode={weather.conditionCode} windSpeed={weather.windSpeed} />
           <WeatherUI
             weather={weather}
@@ -149,14 +136,13 @@ const App: React.FC = () => {
             onSearch={handleSearch}
             loading={loading}
           />
-        </>
+        </div>
       )}
 
-      {/* Toast Error Notification (for failed searches while data exists) */}
       {error && weather && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] bg-red-500/10 backdrop-blur-3xl border border-red-500/20 text-red-200 px-8 py-5 flex items-center gap-4 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-          <span className="text-sm font-semibold tracking-wide">{error}</span>
-          <button onClick={() => setError(null)} className="hover:text-white transition-colors text-2xl leading-none">&times;</button>
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] glass-dark px-6 py-4 rounded-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 duration-500">
+          <span className="text-sm font-medium text-zinc-300">{error}</span>
+          <button onClick={() => setError(null)} className="text-zinc-500 hover:text-white">&times;</button>
         </div>
       )}
     </div>
