@@ -4,14 +4,14 @@ import { getWeatherData, fetchWeatherByCoords } from './services/weatherService'
 import { getNatureInsight } from './services/geminiService';
 import ThreeDBackground from './components/ThreeDBackground';
 import WeatherUI from './components/WeatherUI';
-import { Loader2, RefreshCw, Search, CloudOff } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [insight, setInsight] = useState<GeminiInsight | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [city, setCity] = useState('New York');
+  const [city, setCity] = useState('San Francisco');
 
   const fetchFullWeather = useCallback(async (searchCity?: string, coords?: { lat: number, lon: number }) => {
     setLoading(true);
@@ -26,12 +26,11 @@ const App: React.FC = () => {
 
       setWeather(data);
       setCity(data.city);
-
       getNatureInsight(data).then(setInsight).catch(() => setInsight(null));
 
     } catch (err: any) {
       console.error("Fetch Error:", err);
-      setError(err.message || 'The connection to Earth data was interrupted.');
+      setError(err.message || 'Unable to fetch weather data.');
     } finally {
       setLoading(false);
     }
@@ -56,65 +55,87 @@ const App: React.FC = () => {
     fetchFullWeather(newCity);
   };
 
+  const handleRefresh = () => {
+    fetchFullWeather(city);
+  };
+
+  // Empty state
   if (!loading && !weather && !error) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white p-6">
-        <div className="max-w-md w-full space-y-8 animate-in fade-in duration-1000">
-          <div className="text-center space-y-2">
-            <h1 className="text-5xl font-extrabold tracking-tight">Weather</h1>
-            <p className="text-zinc-400 font-medium">Enter a city to get started</p>
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-6">
+        <div className="max-w-sm w-full space-y-8 text-center">
+          <div className="space-y-3">
+            <div className="text-6xl font-thin tracking-tight text-gray-900 dark:text-white">
+              Weather
+            </div>
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              Enter a city to get started
+            </p>
           </div>
-
-          <div className="relative group">
-            <input
-              type="text"
-              placeholder="Search City"
-              className="w-full bg-zinc-900/50 backdrop-blur-xl border border-white/10 py-4 px-6 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center text-lg placeholder:text-zinc-600"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
-              }}
-            />
-            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
-          </div>
+          <input
+            type="text"
+            placeholder="Search City"
+            className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
+            }}
+          />
         </div>
       </div>
     );
   }
 
+  // Loading state
   if (loading && !weather) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white">
-        <div className="relative flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-zinc-400 font-medium animate-pulse uppercase tracking-widest text-xs">Updating...</p>
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+        <div className="space-y-6 text-center">
+          <div className="w-12 h-12 mx-auto">
+            <div className="w-full h-full rounded-full border-2 border-gray-200 dark:border-gray-800 border-t-blue-500 dark:border-t-blue-500 animate-spin"></div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              Loading Weather
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-600">
+              Please wait
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error && !weather) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black text-white p-6">
-        <div className="max-w-md w-full glass-dark p-10 rounded-3xl text-center space-y-6">
-          <div className="w-20 h-20 bg-red-500/10 flex items-center justify-center mx-auto rounded-full">
-            <CloudOff className="text-red-500" size={32} />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Location Unreachable</h2>
-            <p className="text-zinc-400 text-sm leading-relaxed">{error}</p>
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-6">
+        <div className="max-w-sm w-full space-y-6">
+          <div className="space-y-4 text-center">
+            <div className="w-16 h-16 mx-auto bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Unable to Load
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {error}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-3">
             <button
               onClick={() => fetchFullWeather(city)}
-              className="w-full bg-white text-black font-bold py-4 rounded-2xl transition-all active:scale-95"
+              className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
               Try Again
             </button>
             <input
               type="text"
-              placeholder="Search another city"
-              className="w-full bg-white/5 border border-white/10 py-4 px-6 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 text-center text-sm"
+              placeholder="Try another city"
+              className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch((e.target as HTMLInputElement).value);
               }}
@@ -126,9 +147,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-blue-500/30 overflow-x-hidden transition-colors duration-500">
+    <div className="relative min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
       {weather && (
-        <div className="animate-in fade-in duration-1000">
+        <>
           <ThreeDBackground weatherCode={weather.conditionCode} windSpeed={weather.windSpeed} />
           <WeatherUI
             weather={weather}
@@ -136,13 +157,23 @@ const App: React.FC = () => {
             onSearch={handleSearch}
             loading={loading}
           />
-        </div>
+        </>
       )}
 
       {error && weather && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] glass-dark px-6 py-4 rounded-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 duration-500">
-          <span className="text-sm font-medium text-zinc-300">{error}</span>
-          <button onClick={() => setError(null)} className="text-zinc-500 hover:text-white">&times;</button>
+        <div className="fixed bottom-6 left-6 right-6 sm:left-auto sm:right-6 sm:w-96 z-50">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 flex items-start gap-3 shadow-apple-lg">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-900 dark:text-white">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
     </div>

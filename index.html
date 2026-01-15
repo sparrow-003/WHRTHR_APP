@@ -3,81 +3,222 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alex's Weather</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="description" content="WHRTHR - Premium weather intelligence inspired by Apple design" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta property="og:title" content="WHRTHR Weather" />
+  <meta property="og:description" content="Premium weather app with AI insights" />
+  <title>WHRTHR — Weather</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            apple: {
-              gray: '#8e8e93',
-              blue: '#007aff',
-              background: '#f2f2f7',
-              card: 'rgba(255, 255, 255, 0.7)',
-              darkCard: 'rgba(28, 28, 30, 0.7)',
-            }
-          },
-          backdropBlur: {
-            'xs': '2px',
-          },
-          borderRadius: {
-            '4xl': '2rem',
-            '5xl': '2.5rem',
-          }
-        }
-      }
-    }
-  </script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
   <style>
-    body {
+    :root {
+      --color-primary: #1d1d1d;
+      --color-secondary: #f5f5f7;
+      --color-accent: #0071e3;
+      --color-accent-alt: #34c759;
+      --color-text: #1d1d1d;
+      --color-text-secondary: #86868b;
+      --color-divider: #e5e5e7;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 20px;
+    }
+
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
       margin: 0;
       padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #000;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+
+    /* Dark Mode */
+    body.dark {
+      background: #000;
       color: #fff;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
+      --color-text: #fff;
+      --color-primary: #fff;
+      --color-secondary: #1d1d1d;
+      --color-divider: rgba(255, 255, 255, 0.1);
     }
 
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    body {
+      background: #fff;
+      color: var(--color-text);
+      --color-text: #1d1d1d;
+      --color-primary: #1d1d1d;
+      --color-secondary: #f5f5f7;
+      --color-divider: #e5e5e7;
     }
 
-    .glass-dark {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    #root {
+      width: 100%;
+      height: 100%;
     }
 
     canvas {
       touch-action: none;
+      display: block;
     }
 
-    /* Custom Scrollbar */
+    /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
+      height: 8px;
     }
     ::-webkit-scrollbar-track {
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    body.dark ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+    body.dark ::-webkit-scrollbar-thumb:hover {
       background: rgba(255, 255, 255, 0.3);
     }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    /* Apple-style glass */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark .glass {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Smooth transitions */
+    * {
+      transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Remove default input styles */
+    input:focus {
+      outline: none;
+    }
+    
+    input:focus-visible {
+      outline: 2px solid #0071e3;
+      outline-offset: 2px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+    }
   </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            'sf-display': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'sans-serif'],
+            'sf-text': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'sans-serif'],
+          },
+          colors: {
+            'apple-primary': '#1d1d1d',
+            'apple-secondary': '#f5f5f7',
+            'apple-accent': '#0071e3',
+            'apple-accent-alt': '#34c759',
+            'apple-text': '#1d1d1d',
+            'apple-text-secondary': '#86868b',
+          },
+          spacing: {
+            '128': '32rem',
+            '144': '36rem',
+          },
+          borderRadius: {
+            'sm': '4px',
+            'md': '8px',
+            'lg': '12px',
+            'xl': '20px',
+            '2xl': '28px',
+          },
+          fontSize: {
+            'xs': ['12px', { lineHeight: '16px', letterSpacing: '-0.2px' }],
+            'sm': ['13px', { lineHeight: '18px', letterSpacing: '-0.2px' }],
+            'base': ['15px', { lineHeight: '22px', letterSpacing: '-0.2px' }],
+            'lg': ['17px', { lineHeight: '26px', letterSpacing: '-0.3px' }],
+            'xl': ['19px', { lineHeight: '28px', letterSpacing: '-0.3px' }],
+            '2xl': ['22px', { lineHeight: '32px', letterSpacing: '-0.4px' }],
+            '3xl': ['28px', { lineHeight: '38px', letterSpacing: '-0.5px' }],
+            '4xl': ['34px', { lineHeight: '44px', letterSpacing: '-0.6px' }],
+            '5xl': ['48px', { lineHeight: '56px', letterSpacing: '-0.8px' }],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.6s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'pulse-subtle': 'pulseSubtle 2s ease-in-out infinite',
+            'bounce-subtle': 'bounceSubtle 0.8s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' },
+            },
+            bounceSubtle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-4px)' },
+            },
+          },
+          shadow: {
+            'apple': '0 2px 8px rgba(0, 0, 0, 0.1)',
+            'apple-lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
+            'apple-xl': '0 16px 48px rgba(0, 0, 0, 0.15)',
+          },
+          boxShadow: {
+            'apple': '0 2px 8px rgba(0, 0, 0, 0.1)',
+            'apple-lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
+            'apple-xl': '0 16px 48px rgba(0, 0, 0, 0.15)',
+          },
+        }
+      }
+    }
+  </script>
   <script type="importmap">
 {
   "imports": {

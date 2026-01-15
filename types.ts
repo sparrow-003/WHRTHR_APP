@@ -14,6 +14,10 @@ export interface WeatherData {
   humidity: number;
   windSpeed: number;
   uvIndex: number;
+  visibility?: number;
+  pressure?: number;
+  feelsLike?: number;
+  dewPoint?: number;
   past: DayData[];
   future: DayData[];
 }

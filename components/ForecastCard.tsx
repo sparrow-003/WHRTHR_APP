@@ -8,12 +8,13 @@ interface Props {
 }
 
 const WeatherIcon = ({ code }: { code: number }) => {
-  if (code === 0) return <Sun size={22} className="text-yellow-400" />;
-  if (code <= 3) return <Cloud size={22} className="text-zinc-400" />;
-  if (code <= 67) return <CloudRain size={22} className="text-blue-400" />;
-  if (code <= 77) return <CloudSnow size={22} className="text-white" />;
-  if (code <= 99) return <Zap size={22} className="text-yellow-500" />;
-  return <Cloud size={22} className="text-zinc-400" />;
+  const iconProps = { size: 20, className: "text-gray-700 dark:text-gray-300" };
+  if (code === 0 || code === 1) return <Sun {...iconProps} />;
+  if (code <= 3) return <Cloud {...iconProps} />;
+  if (code <= 67) return <CloudRain {...iconProps} />;
+  if (code <= 77) return <CloudSnow {...iconProps} />;
+  if (code <= 99) return <Zap {...iconProps} />;
+  return <Cloud {...iconProps} />;
 };
 
 export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
@@ -25,16 +26,24 @@ export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
   const isToday = new Date().toDateString() === dateObj.toDateString();
 
   return (
-    <div className={`flex flex-col items-center gap-4 min-w-[60px] py-2 transition-all hover:scale-110 ${isPast ? 'opacity-40' : ''}`}>
-      <span className="text-sm font-bold tracking-tight">
+    <div className={`flex flex-col items-center gap-3 p-3 rounded-lg transition-all duration-300 flex-shrink-0 ${
+      isPast 
+        ? 'bg-gray-50 dark:bg-gray-950/50 opacity-60 hover:opacity-80'
+        : 'bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-800'
+    } ${isToday ? 'ring-2 ring-blue-500' : ''}`}>
+      <span className={`text-xs font-semibold tracking-tight ${
+        isToday 
+          ? 'text-blue-500' 
+          : 'text-gray-600 dark:text-gray-500'
+      }`}>
         {isToday ? 'Today' : label}
       </span>
-      <div className="h-10 flex items-center justify-center">
+      <div className="h-8 flex items-center justify-center">
         <WeatherIcon code={day.conditionCode} />
       </div>
-      <div className="flex flex-col items-center">
-        <span className="text-lg font-semibold">{day.maxTemp}°</span>
-        <span className="text-sm font-medium text-white/30">{day.minTemp}°</span>
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-sm font-semibold text-gray-900 dark:text-white">{day.maxTemp}°</span>
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{day.minTemp}°</span>
       </div>
     </div>
   );
