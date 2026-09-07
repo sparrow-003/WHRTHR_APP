@@ -8,7 +8,7 @@ interface Props {
 }
 
 const WeatherIcon = ({ code }: { code: number }) => {
-  const iconProps = { size: 20, className: "text-gray-700 dark:text-gray-300" };
+  const iconProps = { size: 20, className: "text-blue-400" };
   if (code === 0 || code === 1) return <Sun {...iconProps} />;
   if (code <= 3) return <Cloud {...iconProps} />;
   if (code <= 67) return <CloudRain {...iconProps} />;
@@ -28,13 +28,13 @@ export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
   return (
     <div className={`flex flex-col items-center gap-3 p-3 rounded-lg transition-all duration-300 flex-shrink-0 ${
       isPast 
-        ? 'bg-gray-50 dark:bg-gray-950/50 opacity-60 hover:opacity-80'
-        : 'bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-800'
+        ? 'bg-gray-950/50 opacity-60 hover:opacity-80 backdrop-blur-sm'
+        : 'bg-gray-900/50 hover:bg-blue-950/30 border border-blue-900/30 backdrop-blur-sm'
     } ${isToday ? 'ring-2 ring-blue-500' : ''}`}>
       <span className={`text-xs font-semibold tracking-tight ${
         isToday 
-          ? 'text-blue-500' 
-          : 'text-gray-600 dark:text-gray-500'
+          ? 'text-blue-400' 
+          : 'text-gray-500'
       }`}>
         {isToday ? 'Today' : label}
       </span>
@@ -42,8 +42,8 @@ export const ForecastCard: React.FC<Props> = ({ day, isPast }) => {
         <WeatherIcon code={day.conditionCode} />
       </div>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-sm font-semibold text-gray-900 dark:text-white">{day.maxTemp}°</span>
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{day.minTemp}°</span>
+        <span className="text-sm font-semibold text-white">{day.maxTemp}°</span>
+        <span className="text-xs font-medium text-gray-500">{day.minTemp}°</span>
       </div>
     </div>
   );

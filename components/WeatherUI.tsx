@@ -77,7 +77,7 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
   }
 
   return (
-    <div className="relative z-10 min-h-screen text-gray-900 dark:text-white px-4 sm:px-6 py-6 md:py-8 lg:p-12 overflow-y-auto">
+    <div className="relative z-10 min-h-screen text-white px-4 sm:px-6 py-6 md:py-8 lg:p-12 overflow-y-auto bg-black/80 backdrop-blur-sm">
       {/* Header */}
       <header className="max-w-4xl mx-auto mb-12 md:mb-16">
         <div ref={searchRef} className="relative w-full max-w-md mx-auto mb-12">
@@ -87,23 +87,23 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"
-              className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-gray-900/80 border border-blue-900/50 rounded-lg text-center text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
           </form>
 
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-apple-lg z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-black/95 border border-blue-900/50 rounded-lg overflow-hidden shadow-apple-lg z-50 backdrop-blur-xl">
               {suggestions.map((s, i) => (
                 <button
                   key={i}
                   onClick={() => handleSuggestionClick(s.name)}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0 flex items-center gap-3"
+                  className="w-full text-left px-4 py-3 hover:bg-blue-950/30 transition-colors border-b border-gray-800 last:border-0 flex items-center gap-3"
                 >
-                  <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{s.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <p className="text-sm font-medium text-white truncate">{s.name}</p>
+                    <p className="text-xs text-gray-500">
                       {[s.admin1, s.country].filter(Boolean).join(', ')}
                     </p>
                   </div>
@@ -115,17 +115,17 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
 
         {/* Main Temp Display */}
         <div className="text-center space-y-4 animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-light tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-5xl md:text-6xl font-light tracking-tight text-white">
             {weather.city}
           </h1>
           <div className="space-y-2">
-            <div className="text-8xl md:text-9xl font-thin leading-none text-gray-900 dark:text-white">
+            <div className="text-8xl md:text-9xl font-thin leading-none text-white">
               {weather.temp}°
             </div>
-            <p className="text-lg text-gray-600 dark:text-gray-400 capitalize">
+            <p className="text-lg text-blue-300 capitalize">
               {weather.condition}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
+            <p className="text-sm text-gray-500">
               Feels like {feelsLike}°
             </p>
           </div>
@@ -133,13 +133,13 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
           {/* High/Low */}
           <div className="flex justify-center gap-8 pt-4">
             <div className="text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-600 uppercase tracking-tight font-medium">H</p>
-              <p className="text-xl font-medium text-gray-900 dark:text-white">{highStr}</p>
+              <p className="text-xs text-gray-600 uppercase tracking-tight font-medium">H</p>
+              <p className="text-xl font-medium text-white">{highStr}</p>
             </div>
-            <div className="w-px bg-gray-200 dark:bg-gray-800"></div>
+            <div className="w-px bg-blue-900/50"></div>
             <div className="text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-600 uppercase tracking-tight font-medium">L</p>
-              <p className="text-xl font-medium text-gray-900 dark:text-white">{lowStr}</p>
+              <p className="text-xs text-gray-600 uppercase tracking-tight font-medium">L</p>
+              <p className="text-xl font-medium text-white">{lowStr}</p>
             </div>
           </div>
         </div>
@@ -159,8 +159,8 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
           {/* Past */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <History className="w-5 h-5 text-gray-600 dark:text-gray-500" />
-              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-tight">Past</h3>
+              <History className="w-5 h-5 text-gray-500" />
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-tight">Past</h3>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {weather.past.map((day, i) => (
@@ -172,8 +172,8 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
           {/* Future */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-500" />
-              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-tight">Forecast</h3>
+              <TrendingUp className="w-5 h-5 text-gray-500" />
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-tight">Forecast</h3>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {weather.future.map((day, i) => (
@@ -190,7 +190,7 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
       </main>
 
       <footer className="mt-12 pb-8 text-center">
-        <p className="text-xs text-gray-500 dark:text-gray-600 tracking-wider uppercase font-medium">
+        <p className="text-xs text-gray-600 tracking-wider uppercase font-medium">
           Weather Data • Real-time Updates
         </p>
       </footer>
@@ -204,12 +204,12 @@ const WeatherUI: React.FC<Props> = ({ weather, insight, onSearch, loading }) => 
 };
 
 const StatCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors">
+  <div className="bg-gray-900/50 border border-blue-900/30 rounded-lg p-4 hover:bg-blue-950/30 transition-colors backdrop-blur-sm">
     <div className="flex items-start gap-2 mb-3">
-      <span className="w-5 h-5 text-gray-600 dark:text-gray-500">{icon}</span>
-      <p className="text-xs font-semibold text-gray-600 dark:text-gray-500 uppercase tracking-tight">{label}</p>
+      <span className="w-5 h-5 text-blue-400">{icon}</span>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-tight">{label}</p>
     </div>
-    <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+    <p className="text-2xl font-semibold text-white">{value}</p>
   </div>
 );
 
